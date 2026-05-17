@@ -70,7 +70,9 @@ async function listTtfFonts() {
                     // Filter specifically for URLs ending in .ttf
                     if (fileUrl.endsWith(".ttf")) {
                         //console.log(`${font.family} (${variant}): ${fileUrl}`);
-                        AVAILABLE_FONTS.push({ value: fileUrl, label: font.family + " " + variant });
+                        if (!AVAILABLE_FONTS.some(font => font.value === fileUrl)) {
+                            AVAILABLE_FONTS.push({ value: fileUrl, label: font.family + " " + variant });
+                        }
                     }
                 }
             }
@@ -85,7 +87,7 @@ async function listTtfFonts() {
 //listTtfFonts();
 
 
-const AVAILABLE_FONTS = [{ "value": "fonts/Roboto-Regular.ttf", "label": "Roboto" },
+const REMOTE_FONTS = [{ "value": "fonts/Roboto-Regular.ttf", "label": "Roboto" },
 { "value": "fonts/Apple Chancery.ttf", "label": "Apple Chancery" },
 { "value": "fonts/BigCaslon.ttf", "label": "BigCaslon" },
 { "value": "fonts/Courier New Bold.ttf", "label": "Courier" },
@@ -2974,3 +2976,51 @@ const AVAILABLE_FONTS = [{ "value": "fonts/Roboto-Regular.ttf", "label": "Roboto
 { "value": "https://fonts.gstatic.com/s/zillaslabhighlight/v21/gNMUW2BrTpK8-inLtBJgMMfbm6uNVDvRxiP0TET4YmVF0Mb6.ttf", "label": "Zilla Slab Highlight 700" },
 { "value": "https://fonts.gstatic.com/s/zillaslabhighlight/v21/gNMbW2BrTpK8-inLtBJgMMfbm6uNVDvRxhtIY2DwSXlM.ttf", "label": "Zilla Slab Highlight regular" }]
 
+const PROJECT_FONT_FILES = [
+    'fonts/Jointly3.otf',
+    'fonts/NationalPark-Bold.otf',
+    'fonts/NationalPark-ExtraBold.otf',
+    'fonts/NationalPark-ExtraLight.otf',
+    'fonts/NationalPark-Light.otf',
+    'fonts/NationalPark-Medium.otf',
+    'fonts/NationalPark-Regular.otf',
+    'fonts/NationalPark-SemiBold.otf',
+    'fonts/Times New Roman.ttf',
+    'fonts/Roboto-Regular.ttf',
+    'fonts/Courier New Bold.ttf',
+    'fonts/FontAwesome.otf',
+    'fonts/Comic Sans MS.ttf',
+    'fonts/BigCaslon.ttf',
+    'fonts/Apple Chancery.ttf',
+    'fonts/AVHersheySimplexLight.ttf',
+    'fonts/AVHersheyComplexHeavy.ttf'
+];
+
+function formatProjectFontLabel(fontPath) {
+    const fileName = fontPath.split('/').pop().replace(/\.[^.]+$/, '');
+    return fileName
+        .replace(/[-_]+/g, ' ')
+        .replace(/([a-z\d])([A-Z])/g, '$1 $2')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+function createProjectFonts(fontFiles) {
+    return fontFiles.map(fontPath => ({
+        value: fontPath,
+        label: formatProjectFontLabel(fontPath)
+    }));
+}
+
+function mergeFonts(primaryFonts, additionalFonts) {
+    const seen = new Set();
+    return [...primaryFonts, ...additionalFonts].filter(font => {
+        if (!font || !font.value || !font.label || seen.has(font.value)) {
+            return false;
+        }
+        seen.add(font.value);
+        return true;
+    });
+}
+
+const AVAILABLE_FONTS = mergeFonts(createProjectFonts(PROJECT_FONT_FILES), REMOTE_FONTS);
